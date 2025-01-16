@@ -1,0 +1,152 @@
+'use client'
+
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { CandidateCard } from "./candidate-card"
+import { Candidate } from "../types"
+
+const candidates: Candidate[] = [
+  {
+    id: "1",
+    name: "Joshua Moret",
+    avatar: "/placeholder.svg",
+    experience: ["PYTHON"],
+    status: "INTERESTED"
+  },
+  {
+    id: "2",
+    name: "Naomi Liu",
+    avatar: "/placeholder.svg",
+    experience: ["PYTHON"],
+    status: "INTERESTED"
+  },
+  {
+    id: "3",
+    name: "Guy Leonardo",
+    avatar: "/placeholder.svg",
+    experience: ["PYTHON"],
+    status: "INTERESTED"
+  }
+]
+
+const floatingAvatars = Array(8).fill(null).map((_, i) => ({
+  id: i,
+  src: "/placeholder.svg",
+  // Calculate positions in an arc pattern
+  initialX: Math.cos((i / 7) * Math.PI) * 150,
+  initialY: Math.sin((i / 7) * Math.PI) * 100 + 50,
+}))
+
+export function ChatInterface() {
+  const [isSearching, setIsSearching] = useState(true)
+  const [showResults, setShowResults] = useState(false)
+
+  useEffect(() => {
+    const searchTimer = setTimeout(() => {
+      setIsSearching(false)
+    }, 4000);
+    
+    const resultsTimer = setTimeout(() => {
+      setShowResults(true)
+    }, 4500);
+
+    return () => {
+      clearTimeout(searchTimer);
+      clearTimeout(resultsTimer);
+    }
+  }, [])
+
+  return (
+    <div className="relative min-h-[600px]">
+      <div className="absolute right-0 top-0">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-D69Lr8mNV72PR8YSrVa3eB9QPKDwnB.png" alt="Wellfound AI Logo" className="h-8" />
+      </div>
+      
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-12 h-12 border-2 border-white/20">
+            <AvatarImage src="/placeholder.svg" alt="AI Assistant" />
+          </Avatar>
+          <Card className="bg-white text-gray-900 p-3 rounded-full max-w-md">
+            <p className="flex items-center gap-2 text-sm">
+              Send me candidates interested in
+              <Badge className="bg-amber-100 text-amber-900 font-normal">FINTECH</Badge>
+              with experience in
+              <Badge className="bg-purple-100 text-purple-900 font-normal">PYTHON</Badge>
+            </p>
+          </Card>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-pink-500 text-white py-3 px-6 rounded-full max-w-md ml-14"
+        >
+          Sending you a list of relevant candidates now.
+        </motion.div>
+
+        {isSearching && (
+          <div className="relative h-40">
+            <p className="text-pink-500 text-sm ml-14">searching...</p>
+            <div className="absolute inset-0">
+              <AnimatePresence>
+                {floatingAvatars.map((avatar) => (
+                  <motion.div
+                    key={avatar.id}
+                    className="absolute left-1/2 top-1/2"
+                    initial={{ 
+                      x: -20,
+                      y: -20,
+                      opacity: 0,
+                      scale: 0
+                    }}
+                    animate={{ 
+                      x: avatar.initialX,
+                      y: avatar.initialY,
+                      opacity: [0, 1, 1, 0],
+                      scale: [0, 1, 1, 0],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      times: [0, 0.2, 0.8, 1],
+                      ease: "easeOut",
+                      repeat: Infinity,
+                      repeatDelay: 0.5,
+                      delay: avatar.id * 0.15
+                    }}
+                  >
+                    <Avatar className="w-10 h-10 border border-white/20">
+                      <AvatarImage src="/placeholder.svg" alt="Floating Avatar" />
+                    </Avatar>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
+
+        {showResults && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mt-8"
+          >
+            <h2 className="text-xl font-semibold text-purple-100 mb-8">
+              Your qualified candidate review list
+            </h2>
+            <div className="space-y-2">
+              {candidates.map((candidate, index) => (
+                <CandidateCard key={candidate.id} candidate={candidate} index={index} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  )
+}
+
